@@ -1,74 +1,80 @@
 from collections import defaultdict
 
-class Grafo():
-  def __init__(self):
-    self.adj_list = defaultdict(list)
-    self.tamanho = 0  # Número de arestas
-    self.ordem = 0    # Número de vértices
+class Grafo:
+    def __init__(self):
+        self.adj_list = defaultdict(list)
+        self.ordem = 0
+        self.tamanho = 0
 
-  def adiciona_vertice(self, vertice):
-    if vertice in self.adj_list: # Verificação redudante apenas para existir um retorno da função, a adinção em defaultdict já verifica se existe ou não
-      print("Vertice já existente!")
-    else:
-        self.adj_list[vertice] 
-        self.ordem += 1  # Incrementa a ordem
-        print(f"Vertice {vertice} inserido com sucesso!")
+    def adiciona_vertice(self, u):
+        if u not in self.adj_list:
+            self.adj_list[u] = []
+            self.ordem += 1
 
-  def remove_vertice(self, vertice):
-    if vertice  in dict(self.adj_list): # Verificação redudante apenas para existir um retorno da função, a adinção em defaultdict já verifica se existe ou não
-        for v in self.adj_list:
-          if self.tem_aresta(v, vertice):
-            self.remove_aresta(v, vertice)
-        self.adj_list.pop(vertice)
-        self.ordem -= 1  # Decrementa a ordem
-        print(f"Vertice {vertice} removido com sucesso!.")
-    else:
-        print(f"Vertice {vertice} não existe.")
-        
+    def adiciona_aresta(self, u, v, peso):
+        if peso < 0:
+            print("Pesos negativos não são permitidos.")
+            return
 
-  def adiciona_aresta(self, vertice1, vertice2, peso):
-    # Verifica se os vértices existem, caso contrário, adiciona-os
-    if vertice1 not in self.adj_list:
-        self.adiciona_vertice(vertice1)
-    if vertice2 not in self.adj_list:
-        self.adiciona_vertice(vertice2)
-    if not self.tem_aresta(vertice1, vertice2):
-        self.adj_list[vertice1].append((vertice2, peso))
-        self.adj_list[vertice2].append((vertice1, peso))
-        self.tamanho += 1  # Incrementa o tamanho
-        print(f"Aresta entre {vertice1} e {vertice2} Inserida com sucesso!")
-    else:
-        print(f"Aresta entre {vertice1} e {vertice2} já existe.")
+        if u not in self.adj_list:
+            self.adiciona_vertice(u)
+        if v not in self.adj_list:
+            self.adiciona_vertice(v)
 
-  def remove_aresta(self, vertice1, vertice2):
-    if self.tem_aresta(vertice1, vertice2):
-        #Usa list comprehension pra filtrar o elemento a ser removido
-        self.adj_list[vertice1] = [(v, w) for v, w in self.adj_list[vertice1] if v != vertice2]
-        self.adj_list[vertice2] = [(v, w) for v, w in self.adj_list[vertice2] if v != vertice1]
-        self.tamanho -= 1  # Decrementa o tamanho
-        print(f"Aresta entre {vertice1} e {vertice2} removida.")
-    else:
-        print(f"Aresta entre {vertice1} e {vertice2} não existe.")
+        for i, (vizinho, _) in enumerate(self.adj_list[u]):
+            if vizinho == v:
+                self.adj_list[u][i] = (v, peso)
+                return
 
+        self.adj_list[u].append((v, peso))
+        self.tamanho += 1
 
-  def tem_aresta(self, vertice1, vertice2):
-    if vertice2 in dict(self.adj_list[vertice1]) and vertice1 in dict(self.adj_list[vertice2]): 
-        return True
-    else:
-        return False
+    def remove_aresta(self, u, v):
+        if self.tem_aresta(u, v):
+            self.adj_list[u] = [(v2, p) for v2, p in self.adj_list[u] if v2 != v]
+            self.tamanho -= 1
 
-  def grau_entrada(self, vertice):
-    grau_entrada = 0
-    for v in self.adj_list:
-        if any(neighbor == vertice for neighbor, _ in self.adj_list[v]): # percorre a lista de adjacencia do vertice especifico
-            grau_entrada +=1
-    return grau_entrada
+    def remove_vertice(self, u):
+        if u in self.adj_list:
+            # Diminui o tamanho com a quantidade de arestas que saem de u
+            self.tamanho -= len(self.adj_list[u])
+            
+            # Remove o vértice
+            del self.adj_list[u]
+            self.ordem -= 1
 
-  def grau_saida(self, vertice):
-    return len(self.adj_list[vertice])
+            # Remove as arestas que chegam em u e atualiza o tamanho
+            for vertice, vizinhos in self.adj_list.items():
+                original_len = len(vizinhos)
+                vizinhos[:] = [(v, p) for v, p in vizinhos if v != u]
+                # Diminui o tamanho pela quantidade de arestas removidas
+                self.tamanho -= (original_len - len(vizinhos)) 
+ 
+   
+    def tem_aresta(self, vertice1, vertice2):
+        if vertice2 in dict(self.adj_list[vertice1]) and vertice1 in dict(self.adj_list[vertice2]):
+            return True
+        else:
+            return False 
 
-  def grau(self, vertice):
-    return self.grau_entrada(vertice) + self.grau_saida(vertice) 
+    def grau_entrada(self, u):
+        return sum(
+            1 for vizinhos in self.adj_list.values() if any(v == u for v, _ in vizinhos)
+        )
 
-  def imprime_lista_adjacencias(self):
-    print(self.adj_list)
+    def grau_saida(self, u):
+        return len(self.adj_list[u])
+
+    def grau(self, u):
+        return self.grau_entrada(u) + self.grau_saida(u)
+
+    def get_peso(self, u, v):
+        for vizinho, peso in self.adj_list[u]:
+            if vizinho == v:
+                return peso
+        return None
+
+    def imprime_lista_adjacencias(self):
+        for u, vizinhos in self.adj_list.items():
+            arestas = " -> ".join(f"({v}, {p})" for v, p in vizinhos)
+            print(f"{u}: {arestas}")
