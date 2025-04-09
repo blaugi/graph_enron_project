@@ -1,4 +1,6 @@
 from collections import defaultdict
+import pickle, os
+import heapq
 
 class Grafo:
     def __init__(self):
@@ -74,7 +76,48 @@ class Grafo:
                 return peso
         return None
 
-    def imprime_lista_adjacencias(self):
+    def maiores_graus_saida(self, num_lista=20):
+        vertices = {}
+        for u, _ in self.adj_list.items():
+            saida_u = self.grau_saida(u)
+            vertices[u] = saida_u
+
+        top_n_vertices = heapq.nlargest(num_lista, vertices.keys(), key=lambda x: vertices[x])
+        top_n_dict = {i: vertices[i] for i in top_n_vertices}
+        return top_n_dict
+    
+    def maiores_graus_entrada(self, num_lista=20):
+        vertices = {}
+        for u, _ in self.adj_list.items():
+            entrada_u = self.grau_entrada(u)
+            vertices[u] = entrada_u
+        # Obtém os 'num_lista' vértices com os maiores graus de saída
+        # Usa heapq.nlargest com uma função lambda para ordenar as chaves (vértices)
+        # com base em seus valores (graus) e retornar os top N vértices
+        top_n_vertices = heapq.nlargest(num_lista, vertices.keys(), key=lambda x: vertices[x])
+        top_n_dict = {i: vertices[i] for i in top_n_vertices}
+        return top_n_dict
+
+    def imprime_lista_adjacencias(self, str_return = False) -> str:
+        lista = ""
         for u, vizinhos in self.adj_list.items():
             arestas = " -> ".join(f"({v}, {p})" for v, p in vizinhos)
-            print(f"{u}: {arestas}")
+            vertice = f"{u}: {arestas}"
+            if not str_return:
+                print(vertice)      
+            lista += vertice
+
+        if str_return:
+            return lista
+
+    def pickle_graph(self, file_path: str):
+        """Save this graph to a file using pickle."""
+        with open(file_path, 'wb+') as f:
+            pickle.dump(self, f, pickle.HIGHEST_PROTOCOL)
+        
+    @classmethod
+    def load_pickled_graph(cls, file_path: str):
+        """Load a graph from a pickled file."""
+        with open(file_path, 'rb+') as f:
+            return pickle.load(f)
+    
