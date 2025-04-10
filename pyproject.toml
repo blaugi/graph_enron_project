@@ -1,7 +1,7 @@
 [project]
 name = "graph-enron-project"
 version = "0.1.0"
-description = "Add your description here"
+description = "Implementação do Trabalho de grafos em cima do dataset de emails da Enron."
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = []

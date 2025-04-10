@@ -13,9 +13,9 @@ class Grafo:
             self.adj_list[u] = []
             self.ordem += 1
 
-    def adiciona_aresta(self, u, v, peso):
+    def adiciona_aresta(self, u, v, peso : float):
         if peso < 0:
-            print("Pesos negativos não são permitidos.")
+            print("Pesos negativos não são permitidos.") # Para Djikstra isso é necessário
             return
 
         if u not in self.adj_list:
@@ -87,16 +87,15 @@ class Grafo:
         return top_n_dict
     
     def maiores_graus_entrada(self, num_lista=20):
-        vertices = {}
-        for u, _ in self.adj_list.items():
-            entrada_u = self.grau_entrada(u)
-            vertices[u] = entrada_u
-        # Obtém os 'num_lista' vértices com os maiores graus de saída
-        # Usa heapq.nlargest com uma função lambda para ordenar as chaves (vértices)
-        # com base em seus valores (graus) e retornar os top N vértices
-        top_n_vertices = heapq.nlargest(num_lista, vertices.keys(), key=lambda x: vertices[x])
-        top_n_dict = {i: vertices[i] for i in top_n_vertices}
-        return top_n_dict
+        #calcula os graus de entrada em uma passada
+        in_degrees = defaultdict(int)
+        for _, vizinhos in self.adj_list.items():
+            for v, _ in vizinhos:
+                in_degrees[v] += 1
+        #retorna os n maiores
+        top_n_vertices = heapq.nlargest(num_lista, in_degrees.items(), key=lambda x: x[1])
+
+        return dict(top_n_vertices)
 
     def imprime_lista_adjacencias(self, str_return = False) -> str:
         lista = ""
