@@ -23,9 +23,9 @@ class Grafo:
         if v not in self.adj_list:
             self.adiciona_vertice(v)
 
-        for i, (vizinho, _) in enumerate(self.adj_list[u]):
+        for i, (vizinho, peso_atual) in enumerate(self.adj_list[u]):
             if vizinho == v:
-                self.adj_list[u][i] = (v, peso)
+                self.adj_list[u][i] = (v, peso + peso_atual)
                 return
 
         self.adj_list[u].append((v, peso))
@@ -54,7 +54,13 @@ class Grafo:
  
    
     def tem_aresta(self, vertice1, vertice2):
-        if vertice2 in dict(self.adj_list[vertice1]) and vertice1 in dict(self.adj_list[vertice2]):
+        """
+        Checks if there's an edge from node1 to node2
+        returns a boolean
+        """
+        if vertice1 not in self.adj_list or vertice2 not in self.adj_list:
+            return False
+        if vertice2 in dict(self.adj_list[vertice1]):
             return True
         else:
             return False 
